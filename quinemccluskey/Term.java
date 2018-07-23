@@ -28,6 +28,9 @@ public class Term implements Comparable<Term> {
 				group++;
 			}
 		}
+
+	}
+	public void setColumns() {
 		columns = String.valueOf(Integer.parseInt(combo, 2));
 		columnArray = columns.split(" ");
 	}
@@ -51,7 +54,6 @@ public class Term implements Comparable<Term> {
 		this.columns = columns;
 		columnArray = columns.split(" ");
 		organizeArray(columnArray);
-
 	}
 
 	public void organizeArray(String[] columns) {
