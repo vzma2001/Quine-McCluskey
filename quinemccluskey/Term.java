@@ -5,20 +5,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Term implements Comparable<Term> {
-	private int group = 0; // Depends on the number of ones
-	private String combo; // the binary version made up of 0, 1, and '-'. ie: 0101-1
-	private String letterCombo; // The letter version using letters and apostrophes. ie: A'BC'DF
-	private String columns; // Keeps track of which groups have been combined together
-	private String[] columnArray;
-
+	public int group = 0; // Depends on the number of ones
+	public String combo; // the binary version made up of 0, 1, and '-'. ie: 0101-1
+	public String letterCombo=""; // The letter version using letters and apostrophes. ie: A'BC'DF
+	public String columns; // Keeps track of which groups have been combined together
+	public String[] columnArray;
+	char[] alphabet = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+			'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 	// private ArrayList<Integer> currentColumnNums;
 	public Term(String num) {
 		combo = num;
 		for (int i = 0; i < combo.length(); i++) {
 			if (combo.charAt(i) == '1') {
-				letterCombo = letterCombo + ('A' + i);
+				letterCombo = letterCombo + (alphabet[i]);
 			} else if (combo.charAt(i) == '0') {
-				letterCombo = letterCombo + ('A' + i) + "'";
+				letterCombo = letterCombo + (alphabet[i]) + "'";
 			} else if (combo.charAt(i) != '-' && combo.charAt(i) != ' ') {
 				throw new InvalidParameterException("The character " + combo.charAt(i) + " is not acceptable.");
 			}
@@ -30,18 +31,32 @@ public class Term implements Comparable<Term> {
 		}
 
 	}
-	public void setColumns() {
+
+//	public static void setColumns(ArrayList<Term>termList) {
+//		for(int i=0;i<termList.size();i++) {
+//			termList.get(i).columns = String.valueOf(Integer.parseInt(termList.get(i).combo, 2));
+//			termList.get(i).columnArray = termList.get(i).getColumns().split(" ");
+//			organizeArray(termList.get(i).columnArray);
+//		}
+//		
+//	}
+	public Term(String num, int group, String letterCombo) {
+		combo = num;
+		this.group = group;
+		this.letterCombo = letterCombo;
 		columns = String.valueOf(Integer.parseInt(combo, 2));
 		columnArray = columns.split(" ");
+//		organizeArray(columnArray);
+		
 	}
 
-	public Term(String num, String columns) {
+	public Term(String num, String col) {
 		combo = num;
 		for (int i = 0; i < combo.length(); i++) {
 			if (combo.charAt(i) == '1') {
-				letterCombo = letterCombo + ('A' + i);
+				letterCombo = letterCombo + (alphabet[i]);
 			} else if (combo.charAt(i) == '0') {
-				letterCombo = letterCombo + ('A' + i) + "'";
+				letterCombo = letterCombo + (alphabet[i]) + "'";
 			} else if (combo.charAt(i) != '-' && combo.charAt(i) != ' ') {
 				throw new InvalidParameterException("The character " + combo.charAt(i) + " is not acceptable.");
 			}
@@ -51,22 +66,30 @@ public class Term implements Comparable<Term> {
 				group++;
 			}
 		}
-		this.columns = columns;
+		columns = col;
 		columnArray = columns.split(" ");
-		organizeArray(columnArray);
-	}
-
-	public void organizeArray(String[] columns) {
-		for (int i = 0; i < columns.length; i++) {
-			for (int j = columns.length - 1; j >= 0; j--) {
-				if (Integer.parseInt(columns[j]) <= Integer.parseInt(columns[i])) {
-					String hold = columns[j];
-					columns[j] = columns[i];
-					columns[i] = hold;
-				}
+		for (int i = 0; i < columnArray.length; i++) {
+			if (columnArray[i] == "" || columnArray[i] == " ") {
+				ArrayList<String> listToDeleteFromArray = new ArrayList<String>(Arrays.asList(columnArray));
+				listToDeleteFromArray.remove(i);
+				columnArray = (String[]) listToDeleteFromArray.toArray();
+				i = 0;
 			}
 		}
+//		organizeArray(columnArray);
 	}
+
+//	public static void organizeArray(String[] columns) {
+//		for (int i = 0; i < columns.length; i++) {
+//			for (int j = columns.length - 1; j >= 0; j--) {
+//				if (Integer.parseInt(columns[j]) < Integer.parseInt(columns[i])) {
+//					String hold = columns[j];
+//					columns[j] = columns[i];
+//					columns[i] = hold;
+//				}
+//			}
+//		}
+//	}
 
 	public int getGroup() {
 		return group;

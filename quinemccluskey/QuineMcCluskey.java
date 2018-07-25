@@ -7,19 +7,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 public class QuineMcCluskey {
 	public static void main(String[] args) {
 		String finalEquation = "";
 		String listOfNums = "";
 		String[] seperatedTerms;
-		String[] columnsArray;
 		ArrayList<Term> termList = new ArrayList<Term>();
-		ArrayList<Term> holdList = new ArrayList<Term>();
+
 		ArrayList<Integer> needToRemove = new ArrayList<Integer>();
-		ArrayList<Integer> removed = new ArrayList<Integer>();
+
 		ArrayList<Integer> primeList = new ArrayList<>();
-		ArrayList<Term> primeTermList = new ArrayList<>();
+
 		Term hold = null;
 		Boolean validInput = false;
 		Boolean flag = false;
@@ -46,7 +48,6 @@ public class QuineMcCluskey {
 				}
 			} while (validInput == false);
 			termList.add(hold);
-
 		}
 		do {
 			for (int i = 0; i < termList.size(); i++) {
@@ -61,61 +62,101 @@ public class QuineMcCluskey {
 		} while (flag == false);
 
 		// Organize based on group
-		termList = removeDuplicates(termList);
+		termList = removeDuplicatesTerms(termList);
 		Collections.sort(termList);
 		Boolean wasCombined;
-		for (int x = 0; x < termList.size(); x++) {
-			termList.get(x).setColumns();
+		for (int i = 0; i < termList.size(); i++) {
+			termList.set(i, new Term(termList.get(i).combo, termList.get(i).group, termList.get(i).letterCombo));
 		}
 
 		do {
-			wasCombined = Simplify.combine(termList, longestCombo);
-			termList = removeDuplicates(termList);
+			ArrayList<Term> holder = Simplify.combine(termList);
+			wasCombined = false;
+			if (holder != termList) {
+				wasCombined = true;
+			}
+			termList = removeDuplicatesTerms(termList);
 			Collections.sort(termList);
 		} while (wasCombined == true);
-		for (int x = 0; x < termList.size(); x++) {
-			System.out.println(termList.get(x).getCombo());
-		}
+		// termList = removeDuplicatesTerms(termList);
 
-		/*
-		 * // Find Prime Implicants do { for (int i = 0; i < termList.size(); i++) {
-		 * columnsArray = termList.get(i).getColumnsArray(); for (int j = 0; j <
-		 * columnsArray.length; j++) { implicantTable.putIfAbsent(j, new
-		 * ArrayList<Integer>()); implicantTable.get(j).add(i); } }
-		 * 
-		 * // Find stuff that needs to be removed and puts into needToRemove for
-		 * (Integer key : implicantTable.keySet()) { if (implicantTable.get(key).size()
-		 * == 1) { prime = implicantTable.get(key).get(0); if (finalEquation == "") {
-		 * finalEquation += termList.get(prime).getLetterCombo(); } else { finalEquation
-		 * += " + " + termList.get(prime).getLetterCombo(); } for (int j = 0; j <
-		 * termList.get(prime).getColumnsArray().length; j++) { flag = true; for (int k
-		 * = 0; k < needToRemove.size(); k++) { if (needToRemove.get(k) ==
-		 * Integer.parseInt(termList.get(prime).getColumnsArray()[j])) { flag = false; }
-		 * } if (flag == true) {
-		 * needToRemove.add(Integer.parseInt(termList.get(prime).getColumnsArray()[j]));
-		 * } flag = true; } primeList.add(prime); } } // needToRemove contains the
-		 * numbers in the prime's column
-		 * 
-		 * // Remove rows from the implicantTable that contain a number from the prime
-		 * // implicant set. for (Integer j : implicantTable.keySet()) { for (int k = 0;
-		 * k < needToRemove.size(); k++) { if (j == needToRemove.get(k)) {
-		 * implicantTable.remove(j); } } } // Find Current numbers left to find
-		 * rowDominance ArrayList<Integer> currentNums = new ArrayList<>(); for (Integer
-		 * j : implicantTable.keySet()) { for (int k = 0; k <
-		 * implicantTable.get(j).size(); k++) { for (int l = 0; l < currentNums.size();
-		 * l++) { flag = true; if (currentNums.get(l) == implicantTable.get(k).get(j)) {
-		 * flag = false; } } if (flag == true) {
-		 * currentNums.add(implicantTable.get(k).get(j)); } flag = true; } }
-		 * 
-		 * // Row Dominance for (Integer j : implicantTable.keySet()) { if
-		 * (implicantTable.get(j).size() == currentNums.size()) {
-		 * implicantTable.remove(j); } }
-		 * 
-		 * // Column Dominance // Make new hashmap, get rid of prime from combined list.
-		 * usesd combined lsit // and put in map. for (int j = 0; j < primeList.size();
-		 * j++) { termList.remove(j); System.out.println("Here"); } } while
-		 * (!implicantTable.isEmpty());
-		 */
+		// Find Prime Implicants
+
+		do {
+			for (int i = 0; i < termList.size(); i++) {
+				String[] columnArray = termList.get(i).columnArray;
+				// THIS IS A HOLDER. CHANGE THE 3. SUPPOSED TO BE LIKE THIS:
+				// termList.get(i).getColumnsArray().length
+				for (int j = 0; j < columnArray.length; j++) {
+//					implicantTable.putIfAbsent(Integer.parseInt(columnArray[j]), new ArrayList<Integer>());
+//					ArrayList<Integer> holder = imsplicantTable.get(j);
+//					holder.add(i);
+//					implicantTable.put(j, holder);
+					implicantTable.putIfAbsent(j, new ArrayList<Integer>());
+					implicantTable.get(j).add(i);
+				}
+			}
+
+			// Find stuff that needs to be removed and puts into needToRemove
+			for (Integer key : implicantTable.keySet()) {
+				if (implicantTable.get(key).size() == 1) {
+					prime = implicantTable.get(key).get(0);
+					if (finalEquation == "") {
+						finalEquation += termList.get(prime).getLetterCombo();
+					} else {
+						finalEquation += " + " + termList.get(prime).getLetterCombo();
+					}
+					for (int j = 0; j < termList.get(prime).getColumnsArray().length; j++) {
+						flag = true;
+						for (int k = 0; k < needToRemove.size(); k++) {
+							if (needToRemove.get(k) == Integer.parseInt(termList.get(prime).getColumnsArray()[j])) {
+								flag = false;
+							}
+						}
+						if (flag == true) {
+							needToRemove.add(Integer.parseInt(termList.get(prime).getColumnsArray()[j]));
+						}
+						flag = true;
+					}
+					primeList.add(prime);
+				}
+			}
+			// needToRemove contains the numbers in the prime's column
+
+			// Remove rows from the implicantTable that contain a number from the prime
+			// implicant set.
+			for (Integer j : implicantTable.keySet()) {
+				for (int k = 0; k < needToRemove.size(); k++) {
+					if (j == needToRemove.get(k)) {
+						implicantTable.remove(j);
+					}
+				}
+			}
+			// Find Current numbers left to find rowDominance
+			ArrayList<Integer> currentNums = new ArrayList<>();
+			for (Integer j : implicantTable.keySet()) {
+				for (int k = 0; k < implicantTable.get(j).size(); k++) {
+					currentNums.add(implicantTable.get(j).get(k));
+				}
+			}
+			currentNums = removeDuplicateString(currentNums);
+
+			// Row Dominance
+			ArrayList<Integer> keysToRemove = new ArrayList<>();
+			for (Integer j : implicantTable.keySet()) {
+				if (implicantTable.get(j).size() == currentNums.size()) {
+					keysToRemove.add(j);
+				}
+			}
+			for (int k = 0; k < keysToRemove.size(); k++) {
+				implicantTable.remove(keysToRemove.get(k));
+			}
+			// Column Dominance
+			// Make new hashmap, get rid of prime from combined list. use combinedList and put in map.columnMap
+
+		} while (!implicantTable.isEmpty());
+		System.out.println(finalEquation);
+		System.out.println("HERE");
 	}
 
 	public static void makeCombo(String listOfNums, String[] seperatedTerms, int longestCombo) {
@@ -143,8 +184,25 @@ public class QuineMcCluskey {
 		}
 	}
 
-	public static ArrayList<Term> removeDuplicates(ArrayList<Term> termList) {
+	public static ArrayList<Term> removeDuplicatesTerms(ArrayList<Term> termList) {
+//		ArrayList<String> comboList = new ArrayList<>();
+		ArrayList<Term> hold = new ArrayList<>();
+//		for (int x = 0; x < termList.size(); x++) {
+//			comboList.add(termList.get(x).getCombo());
+//		}
 		HashSet<Term> termSet = new HashSet<>(termList);
-		return new ArrayList<Term>(termSet);
+		for (Term x : termSet) {
+			hold.add(x);
+		}
+		return hold;
+	}
+
+	public static ArrayList<Integer> removeDuplicateString(ArrayList<Integer> currentNums) {
+		HashSet<Integer> stringSet = new HashSet<>(currentNums);
+		currentNums.clear();
+		currentNums.addAll(stringSet);
+
+		return currentNums;
+
 	}
 }
