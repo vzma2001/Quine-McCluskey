@@ -5,14 +5,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Term implements Comparable<Term> {
-	public int group = 0; // Depends on the number of ones
-	public String combo; // the binary version made up of 0, 1, and '-'. ie: 0101-1
-	public String letterCombo=""; // The letter version using letters and apostrophes. ie: A'BC'DF
-	public String columns; // Keeps track of which groups have been combined together
-	public String[] columnArray;
-	char[] alphabet = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-			'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
-	// private ArrayList<Integer> currentColumnNums;
+	private int group = 0; // Depends on the number of ones
+	private String combo; // the binary version made up of 0, 1, and '-'. ie: 0101-1
+	private String letterCombo = ""; // The letter version using letters and apostrophes. ie: A'BC'DF
+	private String columns; // Keeps track of which groups have been combined together
+	private String[] columnArray;
+	char[] alphabet = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+			'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+
+	/**
+	 * Constructor when only given the combonation
+	 * 
+	 * @param num
+	 */
 	public Term(String num) {
 		combo = num;
 		for (int i = 0; i < combo.length(); i++) {
@@ -32,14 +37,13 @@ public class Term implements Comparable<Term> {
 
 	}
 
-//	public static void setColumns(ArrayList<Term>termList) {
-//		for(int i=0;i<termList.size();i++) {
-//			termList.get(i).columns = String.valueOf(Integer.parseInt(termList.get(i).combo, 2));
-//			termList.get(i).columnArray = termList.get(i).getColumns().split(" ");
-//			organizeArray(termList.get(i).columnArray);
-//		}
-//		
-//	}
+	/**
+	 * Consturctor used to make term if all other info is known
+	 * 
+	 * @param num
+	 * @param group
+	 * @param letterCombo
+	 */
 	public Term(String num, int group, String letterCombo) {
 		combo = num;
 		this.group = group;
@@ -47,7 +51,7 @@ public class Term implements Comparable<Term> {
 		columns = String.valueOf(Integer.parseInt(combo, 2));
 		columnArray = columns.split(" ");
 		organizeArray(columnArray);
-		
+
 	}
 
 	public Term(String num, String col) {
@@ -79,6 +83,11 @@ public class Term implements Comparable<Term> {
 		organizeArray(columnArray);
 	}
 
+	/**
+	 * Organizes the columnsArray in increasing order
+	 * 
+	 * @param columns
+	 */
 	public static void organizeArray(String[] columns) {
 		for (int i = 0; i < columns.length; i++) {
 			for (int j = columns.length - 1; j >= 0; j--) {

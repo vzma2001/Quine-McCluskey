@@ -63,7 +63,8 @@ public class QuineMcCluskey {
 		Collections.sort(termList);
 		Boolean wasCombined;
 		for (int i = 0; i < termList.size(); i++) {
-			termList.set(i, new Term(termList.get(i).combo, termList.get(i).group, termList.get(i).letterCombo));
+			termList.set(i,
+					new Term(termList.get(i).getCombo(), termList.get(i).getGroup(), termList.get(i).getLetterCombo()));
 		}
 
 		do {
@@ -79,7 +80,7 @@ public class QuineMcCluskey {
 		// Find Prime Implicants and make map.
 		do {
 			for (int i = 0; i < termList.size(); i++) {
-				String[] columnArray = termList.get(i).columnArray;
+				String[] columnArray = termList.get(i).getColumnsArray();
 				for (int j = 0; j < columnArray.length; j++) {
 					implicantTable.putIfAbsent(Integer.parseInt(columnArray[j]), new ArrayList<Term>());
 					implicantTable.get(Integer.parseInt(columnArray[j])).add(termList.get(i));
@@ -147,7 +148,7 @@ public class QuineMcCluskey {
 				// another term)
 				for (int i = 0; i < currentNums.size(); i++) {
 					ArrayList<String> columnListForMap = new ArrayList<String>(
-							Arrays.asList(currentNums.get(i).columnArray));
+							Arrays.asList(currentNums.get(i).getColumnsArray()));
 					columnMap.put(currentNums.get(i), columnListForMap);
 				}
 				ArrayList<Term> columnDominancerRemoval = new ArrayList<>();

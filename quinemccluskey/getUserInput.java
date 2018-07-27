@@ -8,7 +8,7 @@ public class getUserInput {
 	public static String getString() {
 		String userInputtedString = "";
 		System.out.println("Enter minterms: ");
-		
+
 		userInputtedString = scanner.nextLine();
 		userInputtedString = userInputtedString.trim();
 		return userInputtedString;

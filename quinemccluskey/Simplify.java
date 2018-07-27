@@ -3,7 +3,13 @@ package quinemccluskey;
 import java.util.ArrayList;
 
 public class Simplify {
-
+	/**
+	 * Takes two groups and combines terms between each group if the terms only have
+	 * one difference. Combining will alter all aspects of the term
+	 * 
+	 * @param termList
+	 * @return
+	 */
 	public static ArrayList<Term> combine(ArrayList<Term> termList) {
 		int differences = 0;
 		int position = 0;
@@ -12,7 +18,6 @@ public class Simplify {
 		ArrayList<Term> termList1 = new ArrayList<Term>();
 		ArrayList<Term> termList2 = new ArrayList<Term>();
 		ArrayList<Term> usedTerms = new ArrayList<>();
-		Boolean wasCombined = false;
 		for (Term term : termList) {
 			termList1.clear();
 			termList2.clear();
@@ -42,7 +47,6 @@ public class Simplify {
 						combinedList.add(new Term(newCombo, column));
 						usedTerms.add(termList1.get(i));
 						usedTerms.add(termList2.get(j));
-						wasCombined = true;
 					}
 					differences = 0;
 				}
