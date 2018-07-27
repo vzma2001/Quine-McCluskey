@@ -46,7 +46,7 @@ public class Term implements Comparable<Term> {
 		this.letterCombo = letterCombo;
 		columns = String.valueOf(Integer.parseInt(combo, 2));
 		columnArray = columns.split(" ");
-//		organizeArray(columnArray);
+		organizeArray(columnArray);
 		
 	}
 
@@ -76,20 +76,20 @@ public class Term implements Comparable<Term> {
 				i = 0;
 			}
 		}
-//		organizeArray(columnArray);
+		organizeArray(columnArray);
 	}
 
-//	public static void organizeArray(String[] columns) {
-//		for (int i = 0; i < columns.length; i++) {
-//			for (int j = columns.length - 1; j >= 0; j--) {
-//				if (Integer.parseInt(columns[j]) < Integer.parseInt(columns[i])) {
-//					String hold = columns[j];
-//					columns[j] = columns[i];
-//					columns[i] = hold;
-//				}
-//			}
-//		}
-//	}
+	public static void organizeArray(String[] columns) {
+		for (int i = 0; i < columns.length; i++) {
+			for (int j = columns.length - 1; j >= 0; j--) {
+				if (Integer.parseInt(columns[j]) < Integer.parseInt(columns[i])) {
+					String hold = columns[j];
+					columns[j] = columns[i];
+					columns[i] = hold;
+				}
+			}
+		}
+	}
 
 	public int getGroup() {
 		return group;

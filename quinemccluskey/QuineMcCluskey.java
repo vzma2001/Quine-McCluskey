@@ -7,29 +7,25 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 public class QuineMcCluskey {
+	@SuppressWarnings("unlikely-arg-type")
 	public static void main(String[] args) {
 		String finalEquation = "";
 		String listOfNums = "";
 		String[] seperatedTerms;
 		ArrayList<Term> termList = new ArrayList<Term>();
-
 		ArrayList<Integer> needToRemove = new ArrayList<Integer>();
-
-		ArrayList<Integer> primeList = new ArrayList<>();
-
+		ArrayList<Term> primeList = new ArrayList<>();
 		Term hold = null;
 		Boolean validInput = false;
 		Boolean flag = false;
 		int longestCombo = 0;
-		Map<Integer, ArrayList<Integer>> implicantTable = new HashMap<>();
-		Map<Term, ArrayList<Integer>> columnMap = new HashMap<>();
-		int prime;
+		Map<Integer, ArrayList<Term>> implicantTable = new HashMap<>();
+		Map<Term, ArrayList<String>> columnMap = new HashMap<>();
+		Term prime;
 
+		// User inputs minterms. Checks if the minterms are only made of 1,0,-," ".
 		listOfNums = getUserInput.getString();
 		seperatedTerms = listOfNums.split(" ");
 		makeCombo(listOfNums, seperatedTerms, longestCombo);
@@ -44,11 +40,12 @@ public class QuineMcCluskey {
 					listOfNums = getUserInput.getString();
 					seperatedTerms = listOfNums.split(" ");
 					makeCombo(listOfNums, seperatedTerms, longestCombo);
-					termList = null;
+					termList = new ArrayList<Term>();
 				}
 			} while (validInput == false);
 			termList.add(hold);
 		}
+		// Finds any dashes in the minterms, and replaces it with a 1 and a 0.
 		do {
 			for (int i = 0; i < termList.size(); i++) {
 				replaceDash(termList.get(i), termList, i);
@@ -78,87 +75,106 @@ public class QuineMcCluskey {
 			termList = removeDuplicatesTerms(termList);
 			Collections.sort(termList);
 		} while (wasCombined == true);
-		// termList = removeDuplicatesTerms(termList);
 
-		// Find Prime Implicants
-
+		// Find Prime Implicants and make map.
 		do {
 			for (int i = 0; i < termList.size(); i++) {
 				String[] columnArray = termList.get(i).columnArray;
-				// THIS IS A HOLDER. CHANGE THE 3. SUPPOSED TO BE LIKE THIS:
-				// termList.get(i).getColumnsArray().length
 				for (int j = 0; j < columnArray.length; j++) {
-//					implicantTable.putIfAbsent(Integer.parseInt(columnArray[j]), new ArrayList<Integer>());
-//					ArrayList<Integer> holder = imsplicantTable.get(j);
-//					holder.add(i);
-//					implicantTable.put(j, holder);
-					implicantTable.putIfAbsent(j, new ArrayList<Integer>());
-					implicantTable.get(j).add(i);
+					implicantTable.putIfAbsent(Integer.parseInt(columnArray[j]), new ArrayList<Term>());
+					implicantTable.get(Integer.parseInt(columnArray[j])).add(termList.get(i));
 				}
 			}
 
-			// Find stuff that needs to be removed and puts into needToRemove
+			// Find the prime terms, and uses that to find other terms that need to be
+			// removed.
 			for (Integer key : implicantTable.keySet()) {
 				if (implicantTable.get(key).size() == 1) {
 					prime = implicantTable.get(key).get(0);
 					if (finalEquation == "") {
-						finalEquation += termList.get(prime).getLetterCombo();
+						finalEquation += prime.getLetterCombo();
 					} else {
-						finalEquation += " + " + termList.get(prime).getLetterCombo();
+						finalEquation += " + " + prime.getLetterCombo();
 					}
-					for (int j = 0; j < termList.get(prime).getColumnsArray().length; j++) {
+					for (int j = 0; j < prime.getColumnsArray().length; j++) {
 						flag = true;
 						for (int k = 0; k < needToRemove.size(); k++) {
-							if (needToRemove.get(k) == Integer.parseInt(termList.get(prime).getColumnsArray()[j])) {
+							if (needToRemove.get(k) == Integer.parseInt(prime.getColumnsArray()[j])) {
 								flag = false;
 							}
 						}
 						if (flag == true) {
-							needToRemove.add(Integer.parseInt(termList.get(prime).getColumnsArray()[j]));
+							needToRemove.add(Integer.parseInt(prime.getColumnsArray()[j]));
 						}
 						flag = true;
 					}
 					primeList.add(prime);
 				}
 			}
-			// needToRemove contains the numbers in the prime's column
-
-			// Remove rows from the implicantTable that contain a number from the prime
-			// implicant set.
+			// Removes the rowss that were marked
+			ArrayList<Integer> implicantTableRemoval = new ArrayList<>();
 			for (Integer j : implicantTable.keySet()) {
 				for (int k = 0; k < needToRemove.size(); k++) {
 					if (j == needToRemove.get(k)) {
-						implicantTable.remove(j);
+						implicantTableRemoval.add(j);
 					}
 				}
 			}
-			// Find Current numbers left to find rowDominance
-			ArrayList<Integer> currentNums = new ArrayList<>();
-			for (Integer j : implicantTable.keySet()) {
-				for (int k = 0; k < implicantTable.get(j).size(); k++) {
-					currentNums.add(implicantTable.get(j).get(k));
+			for (int i = 0; i < implicantTableRemoval.size(); i++) {
+				implicantTable.remove(i);
+			}
+			if (!implicantTable.isEmpty()) {
+				// Finds which terms remain
+				ArrayList<Term> currentNums = new ArrayList<>();
+				for (Integer j : implicantTable.keySet()) {
+					for (int k = 0; k < implicantTable.get(j).size(); k++) {
+						currentNums.add(implicantTable.get(j).get(k));
+					}
+				}
+				currentNums = removeDuplicatesTerms(currentNums);
+
+				// Finds and removes Row Dominance (When all terms have a shared row)
+				ArrayList<Integer> keysToRemove = new ArrayList<>();
+				for (Integer j : implicantTable.keySet()) {
+					if (implicantTable.get(j).size() == currentNums.size()) {
+						keysToRemove.add(j);
+					}
+				}
+				for (int k = 0; k < keysToRemove.size(); k++) {
+					implicantTable.remove(keysToRemove.get(k));
+				}
+				// Finds and removes Column Dominance (When one term contains all hte values of
+				// another term)
+				for (int i = 0; i < currentNums.size(); i++) {
+					ArrayList<String> columnListForMap = new ArrayList<String>(
+							Arrays.asList(currentNums.get(i).columnArray));
+					columnMap.put(currentNums.get(i), columnListForMap);
+				}
+				ArrayList<Term> columnDominancerRemoval = new ArrayList<>();
+				for (Term i : columnMap.keySet()) {
+					for (Term j : columnMap.keySet()) {
+						if (columnMap.get(i).contains(columnMap.get(j)) && i != j
+								&& !columnDominancerRemoval.contains(columnMap.get(j))) {
+							columnDominancerRemoval.add(j);
+						}
+					}
+				}
+				for (int i = 0; i < columnDominancerRemoval.size(); i++) {
+					columnMap.remove(columnDominancerRemoval.get(i));
 				}
 			}
-			currentNums = removeDuplicateString(currentNums);
-
-			// Row Dominance
-			ArrayList<Integer> keysToRemove = new ArrayList<>();
-			for (Integer j : implicantTable.keySet()) {
-				if (implicantTable.get(j).size() == currentNums.size()) {
-					keysToRemove.add(j);
-				}
-			}
-			for (int k = 0; k < keysToRemove.size(); k++) {
-				implicantTable.remove(keysToRemove.get(k));
-			}
-			// Column Dominance
-			// Make new hashmap, get rid of prime from combined list. use combinedList and put in map.columnMap
-
 		} while (!implicantTable.isEmpty());
 		System.out.println(finalEquation);
-		System.out.println("HERE");
 	}
 
+	/**
+	 * This finds the longest combination and then makes all the other combos that
+	 * size
+	 * 
+	 * @param listOfNums
+	 * @param seperatedTerms
+	 * @param longestCombo
+	 */
 	public static void makeCombo(String listOfNums, String[] seperatedTerms, int longestCombo) {
 
 		// Find the longest combo
@@ -175,6 +191,14 @@ public class QuineMcCluskey {
 		}
 	}
 
+	/**
+	 * Changes the dashes to 1 and 0. Adds those to the termList and removes the
+	 * original
+	 * 
+	 * @param term
+	 * @param termList
+	 * @param pos
+	 */
 	public static void replaceDash(Term term, ArrayList<Term> termList, int pos) {
 		if (term.getCombo().contains("-")) {
 			Term branch1 = new Term(term.getCombo().replaceFirst("-", "1"));
@@ -184,12 +208,14 @@ public class QuineMcCluskey {
 		}
 	}
 
+	/**
+	 * Checks for duplicate terms by putting it in a HashSet
+	 * 
+	 * @param termList
+	 * @return
+	 */
 	public static ArrayList<Term> removeDuplicatesTerms(ArrayList<Term> termList) {
-//		ArrayList<String> comboList = new ArrayList<>();
 		ArrayList<Term> hold = new ArrayList<>();
-//		for (int x = 0; x < termList.size(); x++) {
-//			comboList.add(termList.get(x).getCombo());
-//		}
 		HashSet<Term> termSet = new HashSet<>(termList);
 		for (Term x : termSet) {
 			hold.add(x);
@@ -197,6 +223,12 @@ public class QuineMcCluskey {
 		return hold;
 	}
 
+	/**
+	 * Checks for duplicate strings by putting it in a HashSet
+	 * 
+	 * @param currentNums
+	 * @return
+	 */
 	public static ArrayList<Integer> removeDuplicateString(ArrayList<Integer> currentNums) {
 		HashSet<Integer> stringSet = new HashSet<>(currentNums);
 		currentNums.clear();
